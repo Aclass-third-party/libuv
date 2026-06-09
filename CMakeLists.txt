@@ -1,24 +1,8 @@
-cmake_minimum_required(VERSION 3.23)
-project(libuv LANGUAGES C)
+if(NOT DEFINED UV_LIB_MODE)
+    set(UV_LIB_MODE "${ACLASS_LIB_MODE}")
+endif()
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
-
-set(_uv_src ${PROJECT_SOURCE_DIR})
-
-set(uv_inc
-    ${_uv_src}/include/uv.h
-    ${_uv_src}/include/uv/errno.h
-    ${_uv_src}/include/uv/threadpool.h
-    ${_uv_src}/include/uv/version.h
-    ${_uv_src}/include/uv/linux.h
-    ${_uv_src}/include/uv/unix.h
-)
-
-set(uv_sources
+set(uv_src
     src/fs-poll.c
     src/idna.c
     src/inet.c
@@ -56,17 +40,33 @@ set(uv_sources
     src/unix/random-sysctl-linux.c
 )
 
-add_library(uv_a STATIC ${uv_sources})
+set(uv_inc
+    include/uv.h
+    include/uv/errno.h
+    include/uv/threadpool.h
+    include/uv/version.h
+    include/uv/linux.h
+    include/uv/unix.h
+)
+
+add_library(uv_a ${UV_LIB_MODE})
+
+target_include_directories(uv_a PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_sources(uv_a PRIVATE
+    ${uv_src}
+)
+
+target_sources(uv_a PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+    FILES     ${uv_inc}
+)
 
 set_target_properties(uv_a PROPERTIES
     OUTPUT_NAME uv
-)
-
-target_include_directories(uv_a
-    PUBLIC
-        ${_uv_src}/include
-    PRIVATE
-        ${_uv_src}/src
 )
 
 target_compile_definitions(uv_a PRIVATE
@@ -82,13 +82,8 @@ endif()
 
 target_link_libraries(uv_a PUBLIC pthread dl rt m)
 
-target_sources(uv_a PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS ${_uv_src}/include
-    FILES     ${uv_inc}
-)
-
 install(TARGETS uv_a
+    LIBRARY   DESTINATION lib
     ARCHIVE   DESTINATION lib
     FILE_SET HEADERS DESTINATION include
 )
