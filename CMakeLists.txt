@@ -49,27 +49,27 @@ set(uv_inc
     include/uv/unix.h
 )
 
-add_library(uv_a ${UV_LIB_MODE})
+add_library(uv ${UV_LIB_MODE})
 
-target_include_directories(uv_a PRIVATE
+target_include_directories(uv PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_sources(uv_a PRIVATE
+target_sources(uv PRIVATE
     ${uv_src}
 )
 
-target_sources(uv_a PUBLIC
+target_sources(uv PUBLIC
     FILE_SET HEADERS
     BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES     ${uv_inc}
 )
 
-set_target_properties(uv_a PROPERTIES
+set_target_properties(uv PROPERTIES
     OUTPUT_NAME uv
 )
 
-target_compile_definitions(uv_a PRIVATE
+target_compile_definitions(uv PRIVATE
     _GNU_SOURCE
     _POSIX_C_SOURCE=200112
     _FILE_OFFSET_BITS=64
@@ -77,12 +77,12 @@ target_compile_definitions(uv_a PRIVATE
 )
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(uv_a PRIVATE -Wno-unused-parameter)
+    target_compile_options(uv PRIVATE -Wno-unused-parameter)
 endif()
 
-target_link_libraries(uv_a PUBLIC pthread dl rt m)
+target_link_libraries(uv PUBLIC pthread dl rt m)
 
-install(TARGETS uv_a
+install(TARGETS uv
     LIBRARY   DESTINATION lib
     ARCHIVE   DESTINATION lib
     FILE_SET HEADERS DESTINATION include
